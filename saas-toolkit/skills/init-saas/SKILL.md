@@ -37,7 +37,7 @@ npx create-next-app@latest [project-name] --typescript --tailwind --eslint --app
 ### 2. Install SaaS dependencies
 
 ```bash
-npm install @supabase/supabase-js @supabase/ssr stripe zod
+npm install @supabase/supabase-js @supabase/ssr stripe @supabase/stripe-sync-engine zod
 npm install -D supabase
 ```
 
@@ -78,15 +78,21 @@ Create migration for core SaaS tables:
 - **profiles** — `id` (references auth.users), `full_name`, `avatar_url`, `stripe_customer_id`, timestamps
 - **organizations** — `id`, `name`, `slug` (unique), `stripe_customer_id`, timestamps
 - **org_members** — `id`, `org_id` (FK), `user_id` (FK), `role` (check: owner/admin/member), timestamps, unique(org_id, user_id)
-- **subscriptions** — `id`, `org_id` (FK), `stripe_subscription_id`, `stripe_price_id`, `status`, `current_period_start`, `current_period_end`, timestamps
+
+**No custom subscriptions table needed** — use `@supabase/stripe-sync-engine` instead, which creates a `stripe` schema with `subscriptions`, `customers`, `products`, `prices`, `invoices`, and more, all auto-synced via webhooks.
 
 Enable RLS on all tables. Add basic policies:
 - profiles: users can read/update own profile
 - organizations: members can read their orgs
 - org_members: members can read memberships in their orgs
-- subscriptions: org members can read their org's subscription
+
+Grant read access to the `stripe` schema for the `authenticated` role.
 
 Add trigger: auto-create profile on auth.users insert.
+
+### 7b. Stripe Sync Engine Edge Function
+
+Create `supabase/functions/stripe-sync/index.ts` that uses `@supabase/stripe-sync-engine` to process all Stripe webhooks and sync data into the `stripe` schema. Follow `/stripe-setup` skill patterns.
 
 ### 8. Initialize shadcn/ui
 

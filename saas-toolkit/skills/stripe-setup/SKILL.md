@@ -22,7 +22,7 @@ Complete Stripe integration for a SaaS application with Next.js and Supabase.
 ### 1. Install & configure
 
 ```bash
-npm install stripe
+npm install stripe @supabase/stripe-sync-engine
 ```
 
 **Environment variables:**
@@ -56,32 +56,69 @@ Define products and prices in Stripe Dashboard or via API:
 
 Store price IDs in environment variables or a config file — never hardcode.
 
-### 3. Supabase subscription tables
+### 3. Stripe Sync Engine (recommended)
+
+Use `@supabase/stripe-sync-engine` to auto-sync all Stripe data into a `stripe` schema in your Supabase database. This replaces manual subscription tables and most webhook handling.
+
+**Run migrations** (one-time setup):
+```typescript
+import { runMigrations } from '@supabase/stripe-sync-engine';
+
+await runMigrations({
+  databaseUrl: process.env.DATABASE_URL!,
+  schema: 'stripe',
+});
+```
+
+**Deploy as Supabase Edge Function** (`supabase/functions/stripe-sync/index.ts`):
+```typescript
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
+import { StripeSync } from 'npm:@supabase/stripe-sync-engine'
+
+const stripeSync = new StripeSync({
+  poolConfig: {
+    connectionString: Deno.env.get('DATABASE_URL')!,
+    max: 20,
+    keepAlive: true,
+  },
+  stripeWebhookSecret: Deno.env.get('STRIPE_WEBHOOK_SECRET')!,
+  stripeSecretKey: Deno.env.get('STRIPE_SECRET_KEY')!,
+  backfillRelatedEntities: false,
+  autoExpandLists: true,
+})
+
+Deno.serve(async (req) => {
+  const rawBody = new Uint8Array(await req.arrayBuffer())
+  const stripeSignature = req.headers.get('stripe-signature')
+  await stripeSync.processWebhook(rawBody, stripeSignature)
+  return new Response(null, { status: 202 })
+})
+```
+
+**Grant access** to the `stripe` schema for your app's database role:
+```sql
+GRANT USAGE ON SCHEMA stripe TO authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA stripe TO authenticated;
+```
+
+This creates tables for: customers, subscriptions, products, prices, invoices, payment_intents, charges, and more — all synced automatically via Stripe webhooks.
+
+### 4. Linking Stripe customers to your users
+
+You still need a mapping between `auth.users` and Stripe customers. Add `stripe_customer_id` to your profiles table:
 
 ```sql
--- Migration: create subscriptions table
-CREATE TABLE public.subscriptions (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  stripe_customer_id text NOT NULL,
-  stripe_subscription_id text UNIQUE,
-  stripe_price_id text,
-  status text NOT NULL DEFAULT 'inactive',
-  current_period_start timestamptz,
-  current_period_end timestamptz,
-  cancel_at_period_end boolean DEFAULT false,
-  created_at timestamptz DEFAULT now() NOT NULL,
-  updated_at timestamptz DEFAULT now() NOT NULL
-);
+ALTER TABLE public.profiles ADD COLUMN stripe_customer_id text;
+CREATE INDEX idx_profiles_stripe_customer_id ON public.profiles(stripe_customer_id);
+```
 
-ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own subscriptions"
-  ON public.subscriptions FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE INDEX idx_subscriptions_user_id ON public.subscriptions(user_id);
-CREATE INDEX idx_subscriptions_stripe_customer_id ON public.subscriptions(stripe_customer_id);
+Query subscription status by joining your profiles with the sync engine's `stripe.subscriptions` table:
+```sql
+SELECT s.status, s.current_period_end
+FROM stripe.subscriptions s
+JOIN stripe.customers c ON s.customer = c.id
+JOIN public.profiles p ON p.stripe_customer_id = c.id
+WHERE p.id = auth.uid();
 ```
 
 ### 4. Checkout Session (Server Action)
@@ -126,7 +163,11 @@ export async function createCheckoutSession(priceId: string) {
 }
 ```
 
-### 5. Webhook handler
+### 5. Webhook handling
+
+**With Stripe Sync Engine (recommended):** All Stripe data sync is handled by the Edge Function deployed in step 3. The sync engine processes 80+ webhook event types automatically.
+
+For **custom business logic** (e.g., sending emails, provisioning access after checkout), add a separate Next.js webhook route that handles only your app-specific events:
 
 **`app/api/webhooks/stripe/route.ts`**:
 ```typescript
@@ -151,15 +192,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
+  // Only handle app-specific business logic here
+  // Data sync (subscriptions, invoices, etc.) is handled by stripe-sync-engine
   switch (event.type) {
     case 'checkout.session.completed':
       await handleCheckoutComplete(event.data.object);
-      break;
-    case 'customer.subscription.updated':
-      await handleSubscriptionUpdate(event.data.object);
-      break;
-    case 'customer.subscription.deleted':
-      await handleSubscriptionDelete(event.data.object);
       break;
     case 'invoice.payment_failed':
       await handlePaymentFailed(event.data.object);
@@ -169,6 +206,8 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 ```
+
+**Tip:** Configure two Stripe webhook endpoints — one pointing to the Edge Function (all events), one pointing to your Next.js route (only app-specific events).
 
 ### 6. Customer Portal
 
@@ -202,6 +241,8 @@ export async function createPortalSession() {
 
 ### 7. Subscription gating
 
+Query the `stripe.subscriptions` table (populated by the sync engine) joined with your profiles:
+
 ```typescript
 // lib/subscription.ts
 import { createClient } from '@/lib/supabase/server';
@@ -211,10 +252,21 @@ export async function getSubscription() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Get the user's stripe_customer_id from profiles
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('stripe_customer_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.stripe_customer_id) return null;
+
+  // Query the stripe schema (synced by stripe-sync-engine)
   const { data } = await supabase
+    .schema('stripe')
     .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
+    .select('id, status, current_period_end, items:subscription_items(price:prices(*))')
+    .eq('customer', profile.stripe_customer_id)
     .in('status', ['active', 'trialing'])
     .single();
 
@@ -245,7 +297,10 @@ stripe trigger invoice.payment_failed
 - NEVER use Charges API, Card Element, or Sources — use Checkout Sessions
 - ALWAYS verify webhook signatures with `constructEvent()`
 - ALWAYS use `request.text()` for webhook body — never `request.json()`
-- Store subscription state in Supabase, query from Supabase (not Stripe API)
+- Use `@supabase/stripe-sync-engine` for Stripe data sync — don't build custom subscription tables
+- Query subscription status from the `stripe` schema (not the Stripe API)
 - Use Server Actions for creating Checkout Sessions and Portal Sessions
 - Use `service_role` key in webhook handler (no user context available)
 - Keep Stripe secret key server-side only — never expose to client
+- Deploy the sync engine as a Supabase Edge Function for webhook processing
+- Use a separate Next.js webhook route only for custom business logic (emails, provisioning)
