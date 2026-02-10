@@ -64,3 +64,97 @@ Invoke skills with slash commands in Claude Code:
 - `/scaffold` — Quick SaaS pattern scaffolding
 - `/add-feature` — Lightweight feature implementation
 - `/team-build` — Multi-agent team coordination
+
+## Building a SaaS from zero
+
+The orchestration skills let you go from an idea to a working SaaS app in a structured, phase-by-phase workflow.
+
+### Step 1: Bootstrap the project
+
+Run `/init-saas` with your project spec — either a description or a spec file:
+
+```
+/init-saas
+
+Build a project management SaaS called "Taskflow":
+- Users sign up and create organizations
+- Org members can create projects with tasks (kanban board)
+- Free plan: 1 project, 10 tasks. Pro plan ($19/mo): unlimited
+- Stripe billing with customer portal
+```
+
+This scaffolds a full Next.js + Supabase + Stripe project: app structure, Supabase clients, middleware, initial DB migrations, Stripe sync engine Edge Function, shadcn/ui, `.env.example`, `CLAUDE.md`, and a `TASKS.md` build plan.
+
+### Step 2: Build phase by phase
+
+Run `/build` to start executing the build plan from `TASKS.md`:
+
+```
+/build
+```
+
+The build runs through 8 phases in order:
+
+| Phase | What happens | Agents involved |
+|-------|-------------|-----------------|
+| 0. Foundation | DB migrations, RLS policies, type generation | supabase-specialist, explore-db |
+| 1. Auth | Login/signup pages, OAuth, middleware guard | supabase-specialist |
+| 2. Backend | Server Actions, API routes, Stripe webhooks | stripe-specialist |
+| 3. Data layer | Fetch helpers, subscription gating, validation | — |
+| 4. Components | UI components, forms, layouts (shadcn/ui) | explore-codebase |
+| 5. Pages | Routes, navigation, auth guards | — |
+| 6. Polish | Loading/error/empty states, mobile, a11y | ui-ux-reviewer |
+| 7. Quality | Tests + security audit | testing-specialist, security-reviewer |
+
+After each phase, the build verifies (`npm run build`), updates `TASKS.md`, and checkpoints progress.
+
+### Step 3: Manage context
+
+Claude Code has a finite context window. After 2-3 phases, run `/clear` to free memory, then:
+
+```
+/resume
+```
+
+This reads `TASKS.md`, verifies completed work, shows a progress summary, and continues from where you left off.
+
+### Step 4: Check project health
+
+At any point, run `/status` for a quick dashboard:
+
+```
+/status
+```
+
+```
+| Area         | Status | Details                   |
+|--------------|--------|---------------------------|
+| Tasks        | 14/22  | Phase 4: Components       |
+| Build        | Pass   |                           |
+| Types        | Pass   |                           |
+| DB (tables)  | 6      | All have RLS              |
+| Git          | Clean  | master, up to date        |
+```
+
+### Adding features later
+
+For individual features after the initial build, use `/add-feature` instead of the full `/build` cycle:
+
+```
+/add-feature Add a notification system — in-app + email notifications
+when a task is assigned to a user
+```
+
+For common SaaS patterns, use `/scaffold`:
+
+```
+/scaffold crud invoices
+/scaffold billing
+/scaffold dashboard
+/scaffold settings
+/scaffold landing
+```
+
+### Parallel builds (experimental)
+
+For large projects, `/team-build` coordinates multiple agents working in parallel — either via Claude Code agent teams or coordinated subagent dispatching with file ownership boundaries.
