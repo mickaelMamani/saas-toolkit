@@ -6,7 +6,7 @@
     {
       "name": "saas-toolkit",
       "path": "./saas-toolkit",
-      "description": "Next.js + Supabase + Stripe SaaS development toolkit with 10 agents and 13 skills"
+      "description": "Next.js + Supabase + Stripe SaaS development toolkit with 11 agents and 20 skills"
     }
   ]
 }

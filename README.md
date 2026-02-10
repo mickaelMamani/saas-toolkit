@@ -4,9 +4,9 @@ Private Claude Code plugin marketplace for Next.js + Supabase + Stripe SaaS deve
 
 ## What's included
 
-**saas-toolkit** plugin (v2.0.0):
-- **10 agents** — codebase explorer, DB explorer, docs explorer, web search, frontend reviewer, Stripe specialist, Supabase specialist, security reviewer, testing specialist, UI/UX reviewer
-- **13 skills** — commits, dev workflow, explore, hotfix, oneshot, plan-feature, code review, auth, stripe-setup, db-migration, security-scan, test, deploy
+**saas-toolkit** plugin (v3.0.0):
+- **11 agents** — codebase explorer, DB explorer, docs explorer, web search, frontend reviewer, Stripe specialist, Supabase specialist, security reviewer, testing specialist, UI/UX reviewer, project manager
+- **20 skills** — commits, dev workflow, explore, hotfix, oneshot, plan-feature, code review, auth, stripe-setup, db-migration, security-scan, test, deploy, init-saas, build, resume, status, scaffold, add-feature, team-build
 - **3 reference indexes** — Next.js App Router, Supabase + Next.js, Stripe + Next.js
 
 ## Setup
@@ -39,6 +39,7 @@ See `saas-toolkit/recommended-settings.json` for recommended hook configurations
 
 Invoke skills with slash commands in Claude Code:
 
+### Development
 - `/commits` — Conventional commit workflow
 - `/dev` — Spec-driven development
 - `/explore` — Codebase exploration
@@ -46,9 +47,20 @@ Invoke skills with slash commands in Claude Code:
 - `/oneshot` — Quick one-shot tasks
 - `/plan-feature` — Feature planning
 - `/review` — Code review
+
+### SaaS Stack
 - `/auth` — Supabase auth implementation
 - `/stripe-setup` — Stripe SaaS integration
 - `/db-migration` — Supabase migrations
 - `/security-scan` — Security audit
 - `/test` — Testing workflows
 - `/deploy` — Deployment preparation
+
+### Orchestration (v3.0.0)
+- `/init-saas` — Bootstrap new SaaS project from spec
+- `/build` — Phase-by-phase build orchestration
+- `/resume` — Resume after context reset
+- `/status` — Project health check
+- `/scaffold` — Quick SaaS pattern scaffolding
+- `/add-feature` — Lightweight feature implementation
+- `/team-build` — Multi-agent team coordination
