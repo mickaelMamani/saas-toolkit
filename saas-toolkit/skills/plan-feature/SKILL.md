@@ -38,6 +38,32 @@ Create a detailed implementation plan for a new feature, producing a structured 
 - Design the UI components (if applicable)
 - Identify third-party integrations needed
 
+#### SaaS-specific design considerations
+
+**Subscription gating:**
+- Which subscription tier(s) can access this feature? (free / pro / enterprise)
+- Is this a hard gate (blocked) or soft gate (limited usage)?
+- Where is the subscription check enforced? (middleware, server action, component)
+- What does the upgrade prompt look like?
+
+**Multi-tenancy:**
+- Is this feature user-scoped or organization-scoped?
+- RLS implications: what policies are needed?
+- Does the data model need `org_id` foreign keys?
+- How does this interact with existing org member roles?
+
+**Billing impact:**
+- Does this feature change metered usage?
+- Are new Stripe products/prices needed?
+- Does the pricing page need updating?
+- Any proration or plan change implications?
+
+**Auth requirements:**
+- Does this feature require authentication?
+- What role/permission level is needed?
+- Are there public (unauthenticated) views?
+- OAuth or email verification requirements?
+
 ### 4. Implementation plan
 
 Produce a phased plan with this structure:
@@ -48,11 +74,11 @@ Produce a phased plan with this structure:
 ### Overview
 Brief description of what this feature does.
 
-### Phase 1: [Foundation]
+### Phase 1: [Foundation — DB & Types]
 - [ ] Task 1 — file(s) affected, what changes
 - [ ] Task 2 — ...
 
-### Phase 2: [Core logic]
+### Phase 2: [Core logic — Server Actions & API]
 - [ ] Task 3 — ...
 - [ ] Task 4 — ...
 
@@ -61,6 +87,16 @@ Brief description of what this feature does.
 
 ### Phase 4: [Polish / Edge cases]
 - [ ] Task 6 — ...
+
+### SaaS Feature Checklist
+- [ ] RLS policies cover all CRUD operations
+- [ ] Subscription tier gating implemented
+- [ ] Audit logging for important actions
+- [ ] Error states (auth, permission, subscription, network)
+- [ ] Loading states (skeleton/spinner)
+- [ ] Mobile responsive
+- [ ] Empty states with helpful guidance
+- [ ] Rate limiting (if applicable)
 
 ### Risks & open questions
 - ...
@@ -73,3 +109,4 @@ Brief description of what this feature does.
 - Consider error handling, loading states, and edge cases
 - Flag decisions that need user input
 - Keep the plan realistic and achievable
+- Always address subscription gating and multi-tenancy for new features

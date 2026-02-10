@@ -24,16 +24,40 @@ Determine what to review:
 
 ### 2. Parallel review
 
-Launch the **frontend-code-reviewer** agent for frontend files (components, pages, hooks, styles).
+Launch these agents in parallel as appropriate:
+
+- **frontend-code-reviewer** agent for frontend files (components, pages, hooks, styles)
+- **security-reviewer** agent for a comprehensive security audit across all files
 
 For backend files, review directly for:
 - **API design** — RESTful conventions, proper HTTP methods, status codes
-- **Security** — input validation, authentication checks, authorization, SQL injection
 - **Error handling** — proper try/catch, meaningful error messages, no swallowed errors
 - **Data access** — efficient queries, proper indexing hints, no N+1 patterns
 - **Type safety** — proper TypeScript types, no `any`, validated inputs with Zod
 
-### 3. Cross-cutting concerns
+### 3. SaaS-specific checks
+
+#### Stripe compliance
+- Webhook handlers verify signatures with `constructEvent()`
+- Raw body parsing (not JSON parsed)
+- Idempotent event processing
+- No price/amount trust from client
+- Secret key not exposed to client
+
+#### Supabase security
+- RLS enabled on all public tables
+- `getUser()` used instead of `getSession()` for auth checks
+- Service role key only in server-side code
+- No Supabase client with service role in Client Components
+
+#### Next.js patterns
+- Server Components by default (no unnecessary `"use client"`)
+- Server Actions for mutations (not API routes)
+- `next/image`, `next/font`, `next/link` used consistently
+- Proper Suspense boundaries
+- Metadata API for SEO
+
+### 4. Cross-cutting concerns
 
 After individual file reviews, check:
 - **Consistency** — do new files follow existing patterns?
@@ -41,7 +65,7 @@ After individual file reviews, check:
 - **Breaking changes** — could these changes break existing functionality?
 - **Test coverage** — are there tests for the new code? Should there be?
 
-### 4. Summary
+### 5. Summary
 
 Produce a final review with:
 
@@ -50,6 +74,17 @@ Produce a final review with:
 
 **Files reviewed:** X
 **Overall assessment:** [Good / Needs changes / Needs significant rework]
+
+### Production Readiness
+
+| Dimension | Status | Notes |
+|-----------|--------|-------|
+| Security | PASS/FAIL | ... |
+| Stripe compliance | PASS/FAIL/N/A | ... |
+| Supabase security | PASS/FAIL/N/A | ... |
+| Next.js patterns | PASS/FAIL | ... |
+| Error handling | PASS/FAIL | ... |
+| Type safety | PASS/FAIL | ... |
 
 ### Critical issues (must fix)
 1. ...

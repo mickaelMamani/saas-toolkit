@@ -26,9 +26,23 @@ Full development workflow for implementing features or changes with a structured
 Before writing any code:
 
 1. **Read the spec/request** — Understand exactly what's being asked. Ask clarifying questions if anything is ambiguous.
-2. **Explore the codebase** — Use the explore-codebase agent to understand the current architecture, relevant files, and existing patterns.
+2. **Auto-explore the codebase** — Launch the `explore-codebase` agent to map the relevant parts of the codebase. Focus on:
+   - Project structure and file organization
+   - Existing patterns for similar features
+   - Database schema (use `explore-db` agent if DB changes needed)
+   - Current auth/subscription patterns
 3. **Check existing implementations** — Look for similar features already implemented to follow established patterns.
 4. **Identify dependencies** — Determine what libraries, APIs, or database changes are needed.
+
+**Context checkpoint:** After exploration, summarize your understanding:
+```
+## Context Summary
+- **Goal:** [what we're building]
+- **Key files:** [files to create/modify]
+- **Patterns to follow:** [existing patterns discovered]
+- **Dependencies:** [libraries/APIs/DB changes needed]
+- **Open questions:** [anything unclear]
+```
 
 ### Phase 2: Plan
 
@@ -37,12 +51,25 @@ Before writing any code:
 3. **Identify risks** — Note potential issues, edge cases, or breaking changes.
 4. **Present the plan** — Share the plan with the user for approval before implementing.
 
+Use ultrathink for complex phases that involve architectural decisions or multi-system coordination.
+
 ### Phase 3: Implement
 
-1. **Work incrementally** — Implement one piece at a time, starting with the foundation (types, database, then API, then UI).
-2. **Follow existing patterns** — Match the project's coding style, naming conventions, and file organization.
-3. **Handle errors** — Add proper error handling at system boundaries.
-4. **Keep it minimal** — Only implement what was requested. No extra features or premature abstractions.
+Follow this SaaS stack-specific order:
+
+1. **Database** — Migrations, new tables, column changes (`/db-migration` patterns)
+2. **RLS policies** — Security policies for new/modified tables
+3. **Types** — Generate or update TypeScript types (`supabase gen types`)
+4. **Server Actions / API routes** — Backend logic, mutations, data fetching
+5. **UI components** — Pages, layouts, client components
+6. **Integration** — Wire everything together, test flows
+
+For each step:
+- Follow existing patterns in the project
+- Handle errors at system boundaries
+- Keep it minimal — only implement what was requested
+- If implementing auth flows, cross-reference `/auth` skill patterns
+- If implementing Stripe billing, cross-reference `/stripe-setup` skill patterns
 
 ### Phase 4: Verify
 

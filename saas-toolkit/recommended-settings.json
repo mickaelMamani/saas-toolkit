@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/settings.schema.json",
+  "_comment": "Recommended hooks for saas-toolkit. Copy relevant sections into your project's .claude/settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const c=JSON.parse(process.argv[1]).input.command; const allowed=[/^npx vitest/,/^npx playwright/,/^npx supabase/,/^npm run/,/^npm audit/,/^stripe /,/^git /,/^npm install/]; if(!allowed.some(r=>r.test(c))){process.exit(2);}\"",
+            "_description": "Restrict Bash to safe commands: test runners, supabase CLI, npm, stripe CLI, git"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const p=JSON.parse(process.argv[1]).input.file_path; if(p.includes('.env')&&!p.endsWith('.example')){console.error('Blocked: cannot write to .env files');process.exit(2);}\"",
+            "_description": "Prevent writing to .env files (except .env.example)"
+          }
+        ]
+      }
+    ]
+  }
+}

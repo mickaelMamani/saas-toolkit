@@ -4,9 +4,10 @@ Private Claude Code plugin marketplace for Next.js + Supabase + Stripe SaaS deve
 
 ## What's included
 
-**saas-toolkit** plugin:
-- **6 agents** — codebase explorer, DB explorer, docs explorer, web search, frontend reviewer, Stripe specialist
-- **7 skills** — commits, dev workflow, explore, hotfix, oneshot, plan-feature, code review
+**saas-toolkit** plugin (v2.0.0):
+- **10 agents** — codebase explorer, DB explorer, docs explorer, web search, frontend reviewer, Stripe specialist, Supabase specialist, security reviewer, testing specialist, UI/UX reviewer
+- **13 skills** — commits, dev workflow, explore, hotfix, oneshot, plan-feature, code review, auth, stripe-setup, db-migration, security-scan, test, deploy
+- **3 reference indexes** — Next.js App Router, Supabase + Next.js, Stripe + Next.js
 
 ## Setup
 
@@ -30,6 +31,10 @@ Copy or merge `saas-toolkit/.mcp.json` into your project's `.mcp.json`, then add
 
 Create a `CLAUDE.md` in your project root with project-specific context (tech stack, conventions, file structure).
 
+### 4. Recommended hooks (optional)
+
+See `saas-toolkit/recommended-settings.json` for recommended hook configurations that restrict Bash commands to safe operations and prevent writing to `.env` files.
+
 ## Skills usage
 
 Invoke skills with slash commands in Claude Code:
@@ -41,3 +46,9 @@ Invoke skills with slash commands in Claude Code:
 - `/oneshot` — Quick one-shot tasks
 - `/plan-feature` — Feature planning
 - `/review` — Code review
+- `/auth` — Supabase auth implementation
+- `/stripe-setup` — Stripe SaaS integration
+- `/db-migration` — Supabase migrations
+- `/security-scan` — Security audit
+- `/test` — Testing workflows
+- `/deploy` — Deployment preparation
