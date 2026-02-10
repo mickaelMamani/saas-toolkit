@@ -11,27 +11,49 @@ Private Claude Code plugin marketplace for Next.js + Supabase + Stripe SaaS deve
 
 ## Setup
 
-### 1. Add the marketplace to your project
+### 1. Create a Supabase Cloud project
 
-In your project's `.claude/settings.json`, add the marketplace path:
+This toolkit requires **Supabase Cloud** (not local/self-hosted). Create a project at [supabase.com](https://supabase.com) and note your project URL and keys.
+
+### 2. Add the plugin to your project
+
+In your project's `.claude/settings.json`, add the plugin path:
 
 ```json
 {
   "plugins": [
-    "/Users/mamani/Documents/Projets/saas-claude-marketplace/saas-toolkit"
+    "/path/to/saas-toolkit"
   ]
 }
 ```
 
-### 2. Configure MCP servers
+### 3. Configure MCP servers
 
-Copy or merge `saas-toolkit/.mcp.json` into your project's `.mcp.json`, then add your project-specific servers (Supabase, etc.).
+Copy `saas-toolkit/.mcp.json` into your project's `.mcp.json`. The plugin ships with two MCP servers:
 
-### 3. Project-specific CLAUDE.md
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstreamapi/context7-mcp@latest"]
+    }
+  }
+}
+```
+
+**Supabase MCP** is required — it lets agents interact directly with your Supabase project (manage tables, run migrations, query data, manage RLS policies). On first use, it opens a browser window to authenticate with your Supabase account. No personal access token needed.
+
+**Context7 MCP** provides up-to-date library documentation for Next.js, Supabase, Stripe, etc.
+
+### 4. Project-specific CLAUDE.md
 
 Create a `CLAUDE.md` in your project root with project-specific context (tech stack, conventions, file structure).
 
-### 4. Recommended hooks (optional)
+### 5. Recommended hooks (optional)
 
 See `saas-toolkit/recommended-settings.json` for recommended hook configurations that restrict Bash commands to safe operations and prevent writing to `.env` files.
 

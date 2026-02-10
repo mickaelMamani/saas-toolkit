@@ -18,6 +18,14 @@ user-invocable: true
 
 Scaffolds a complete Next.js + Supabase + Stripe SaaS project from a spec file or description.
 
+## Prerequisites
+
+- **Supabase Cloud project** — Create one at [supabase.com](https://supabase.com) before running this skill
+- **Supabase MCP server** — Must be configured in `.mcp.json` (the plugin ships with it). This is required for agents to interact with your Supabase project (migrations, RLS, type generation)
+- **Stripe account** — Required if the project includes billing
+
+Before starting, verify the Supabase MCP connection by using any `mcp__supabase__*` tool. If it prompts for authentication, complete the browser login flow first.
+
 ## Input
 
 The user provides either:

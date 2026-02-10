@@ -1,5 +1,8 @@
 {
   "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp"
+    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstreamapi/context7-mcp@latest"]
