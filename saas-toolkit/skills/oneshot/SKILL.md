@@ -1,5 +1,7 @@
 ---
-description: Quick one-shot tasks — minimal overhead, just do it
+name: oneshot
+description: Quick one-shot tasks — minimal overhead, just do it.
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -7,7 +9,6 @@ allowed-tools:
   - Grep
   - Glob
   - Bash
-user-invocable: true
 ---
 
 # /oneshot — Quick One-Shot Tasks

@@ -1,8 +1,8 @@
 {
   "name": "saas-toolkit",
-  "version": "3.0.0",
+  "version": "2.0.0",
   "author": "Mickael",
-  "description": "Claude Code plugin for Next.js + Supabase + Stripe SaaS development — 11 custom agents and 20 skills for efficient full-stack workflows.",
+  "description": "Claude Code plugin for building production-ready SaaS with Next.js + Supabase + Stripe — 11 agents, 20 skills, 3 reference indexes, orchestration layer with MCP-first architecture.",
   "agents": [
     "agents/explore-codebase.md",
     "agents/explore-db.md",

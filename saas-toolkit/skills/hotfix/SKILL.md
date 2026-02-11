@@ -1,5 +1,7 @@
 ---
-description: Hotfix debugging workflow — reproduce, diagnose, fix, verify
+name: hotfix
+description: Hotfix debugging workflow — reproduce, diagnose, fix, verify.
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -8,8 +10,7 @@ allowed-tools:
   - Glob
   - Bash
   - Task
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /hotfix — Hotfix Debugging Workflow
@@ -47,8 +48,16 @@ Structured workflow for quickly diagnosing and fixing bugs in production or deve
 
 ## SaaS Debugging Patterns
 
-### Stripe webhook debugging
-- **Symptom:** Webhook endpoint returns 400/500, events not processed
+### Stripe sync debugging (stripe-sync-engine)
+- **Symptom:** Stripe data not appearing in `stripe.*` tables
+- **Check Edge Function logs:** Use `mcp__supabase` to view Edge Function logs for the `stripe-sync` function
+- **Verify `stripe.*` tables have latest data:** Query `stripe.subscriptions`, `stripe.customers` via MCP Supabase
+- **Run `syncSingleEntity()`:** For missing records, trigger a single-entity sync to backfill
+- **Check webhook endpoint:** Verify the Edge Function URL is set as the webhook endpoint in Stripe Dashboard (via `mcp__stripe` or Dashboard)
+- **Check secrets:** Ensure `DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` are set on the Edge Function via MCP Supabase
+
+### Stripe webhook debugging (custom webhook route)
+- **Symptom:** Custom webhook endpoint returns 400/500
 - **Check raw body parsing:** Ensure `request.text()` is used, NOT `request.json()`. The `constructEvent` function requires the raw string body.
 - **Check signature:** Verify `STRIPE_WEBHOOK_SECRET` matches the endpoint's secret in Stripe Dashboard (different for test vs live, different for Stripe CLI vs dashboard).
 - **Check event delivery:** In Stripe Dashboard → Webhooks → select endpoint → view event attempts and response codes.
@@ -73,11 +82,13 @@ Structured workflow for quickly diagnosing and fixing bugs in production or deve
 
 ### Subscription state debugging
 - **Symptom:** User has active subscription in Stripe but app shows free tier
-- **Check Stripe Dashboard:** Verify the subscription status, customer ID, and product/price IDs.
-- **Check Supabase table:** Query the `subscriptions` table for the user's `stripe_customer_id`.
-- **Check webhook processing:** Was the `customer.subscription.updated` event delivered and processed? Check Stripe webhook logs.
-- **Check sync logic:** Does the webhook handler update the Supabase `subscriptions` table with the correct fields?
+- **Check Stripe Dashboard:** Verify the subscription status, customer ID, and product/price IDs (via `mcp__stripe`)
+- **Check `stripe.subscriptions` table:** Query via `mcp__supabase` SQL for the user's `stripe_customer_id`
+- **Compare Stripe vs DB:** Compare Stripe dashboard data (via `mcp__stripe`) with `stripe.subscription` table data (via `mcp__supabase`)
+- **Check webhook delivery:** Was the event delivered to the Edge Function? Check Stripe webhook logs + Edge Function logs
+- **Check stripe-sync-engine:** If data is missing, run `syncSingleEntity()` for the specific customer/subscription
 - **Check gating logic:** Is the subscription check querying the right table/column? (`status = 'active'` vs `status IN ('active', 'trialing')`)
+- **Check RLS:** Can the authenticated user actually read the `stripe.*` tables? Test the RLS policy
 
 ## Rules
 

@@ -1,5 +1,6 @@
 ---
-description: Complete Stripe SaaS integration — checkout, webhooks, portal, subscription sync
+name: stripe-setup
+description: Stripe payments and subscriptions for SaaS. Use when implementing checkout, billing portal, webhooks, or subscription management.
 allowed-tools:
   - Read
   - Write
@@ -9,8 +10,8 @@ allowed-tools:
   - Bash
   - WebSearch
   - WebFetch
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
+  - mcp__stripe
 ---
 
 # /stripe-setup — Stripe SaaS Integration
@@ -135,13 +136,13 @@ export async function createCheckoutSession(priceId: string) {
   if (!user) redirect('/login');
 
   // Get or create Stripe customer
-  let { data: subscription } = await supabase
-    .from('subscriptions')
+  let { data: profile } = await supabase
+    .from('profiles')
     .select('stripe_customer_id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single();
 
-  let customerId = subscription?.stripe_customer_id;
+  let customerId = profile?.stripe_customer_id;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email,
@@ -222,16 +223,16 @@ export async function createPortalSession() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: subscription } = await supabase
-    .from('subscriptions')
+  const { data: profile } = await supabase
+    .from('profiles')
     .select('stripe_customer_id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single();
 
-  if (!subscription?.stripe_customer_id) redirect('/pricing');
+  if (!profile?.stripe_customer_id) redirect('/pricing');
 
   const session = await stripe.billingPortal.sessions.create({
-    customer: subscription.stripe_customer_id,
+    customer: profile.stripe_customer_id,
     return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/billing`,
   });
 

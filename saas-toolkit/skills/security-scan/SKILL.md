@@ -1,12 +1,14 @@
 ---
-description: Security audit — launches security-reviewer agent plus automated scans
+name: security-scan
+description: Run a security audit. Use before production deployment, after major features, or when security review is needed.
+context: fork
+agent: security-reviewer
 allowed-tools:
   - Read
   - Grep
   - Glob
   - Task
   - Bash
-user-invocable: true
 ---
 
 # /security-scan — Security Audit

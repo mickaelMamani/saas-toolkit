@@ -1,5 +1,6 @@
 ---
-description: Supabase auth implementation for Next.js App Router
+name: auth
+description: Supabase authentication flows in Next.js App Router. Use when building signup, login, logout, password reset, OAuth, or protected routes.
 allowed-tools:
   - Read
   - Write
@@ -9,8 +10,7 @@ allowed-tools:
   - Bash
   - WebSearch
   - WebFetch
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /auth — Supabase Auth for Next.js

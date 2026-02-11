@@ -1,12 +1,13 @@
 ---
-description: Code review with parallel subagents for thorough analysis
+name: review
+description: Code review with parallel subagents for thorough analysis.
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Grep
   - Glob
   - Task
   - Bash
-user-invocable: true
 ---
 
 # /review — Code Review

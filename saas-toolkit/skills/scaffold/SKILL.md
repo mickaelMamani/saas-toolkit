@@ -1,5 +1,8 @@
 ---
-description: Quick SaaS pattern scaffolding — CRUD resource, billing, dashboard, settings, landing page
+name: scaffold
+description: Generate boilerplate for common SaaS patterns. Supports crud, dashboard-page, settings-section, billing-page, admin-panel, landing-page, auth-pages, onboarding-flow.
+disable-model-invocation: true
+argument-hint: <pattern> <name>
 allowed-tools:
   - Read
   - Write
@@ -7,7 +10,7 @@ allowed-tools:
   - Grep
   - Glob
   - Bash
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /scaffold — Quick SaaS Pattern Scaffolding
@@ -76,6 +79,38 @@ Generates:
 - **Pricing CTA** — `src/components/landing/pricing-cta.tsx`
 - **Footer** — `src/components/landing/footer.tsx`
 - **Landing page** — `src/app/page.tsx` composing all sections
+
+### `admin-panel`
+
+Admin layout with user management.
+
+Generates:
+- **Admin layout** — `src/app/(protected)/admin/layout.tsx` with admin nav
+- **Users list** — `src/app/(protected)/admin/users/page.tsx` with data table
+- **Subscriptions** — `src/app/(protected)/admin/subscriptions/page.tsx`
+- **Impersonation** — helper to view as specific user (read-only)
+
+### `auth-pages`
+
+Complete authentication pages.
+
+Generates:
+- **Login** — `src/app/(auth)/login/page.tsx` with email/password + OAuth buttons
+- **Signup** — `src/app/(auth)/signup/page.tsx` with form + validation
+- **Forgot password** — `src/app/(auth)/forgot-password/page.tsx`
+- **Reset password** — `src/app/(auth)/reset-password/page.tsx`
+- **OAuth callback** — `src/app/auth/callback/route.ts`
+
+### `onboarding-flow`
+
+Multi-step onboarding wizard.
+
+Generates:
+- **Onboarding layout** — `src/app/(protected)/onboarding/layout.tsx` with progress bar
+- **Step 1: Profile** — `src/app/(protected)/onboarding/profile/page.tsx`
+- **Step 2: Team** — `src/app/(protected)/onboarding/team/page.tsx`
+- **Step 3: Plan** — `src/app/(protected)/onboarding/plan/page.tsx`
+- **Actions** — `src/app/(protected)/onboarding/actions.ts`
 
 ## Adaptation Rules
 

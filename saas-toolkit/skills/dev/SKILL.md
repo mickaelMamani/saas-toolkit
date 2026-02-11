@@ -1,5 +1,7 @@
 ---
-description: Spec-driven development workflow — understand, plan, implement, verify
+name: dev
+description: Spec-driven development workflow — understand, plan, implement, verify.
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -10,9 +12,8 @@ allowed-tools:
   - Task
   - WebSearch
   - WebFetch
-  - mcp__supabase__*
-  - mcp__context7__*
-user-invocable: true
+  - mcp__supabase
+  - mcp__context7
 ---
 
 # /dev — Spec-Driven Development Workflow
@@ -55,14 +56,26 @@ Use ultrathink for complex phases that involve architectural decisions or multi-
 
 ### Phase 3: Implement
 
-Follow this SaaS stack-specific order:
+Use `ultrathink` for complex phases that involve architectural decisions or multi-system coordination.
 
+#### Implementation Order
+
+**Backend-first** (recommended for most features):
 1. **Database** — Migrations, new tables, column changes (`/db-migration` patterns)
 2. **RLS policies** — Security policies for new/modified tables
 3. **Types** — Generate or update TypeScript types (`supabase gen types`)
 4. **Server Actions / API routes** — Backend logic, mutations, data fetching
-5. **UI components** — Pages, layouts, client components
-6. **Integration** — Wire everything together, test flows
+5. **Edge Functions** — If needed (stripe-sync-engine, custom webhooks)
+6. **UI components** — Pages, layouts, client components
+7. **Integration** — Wire everything together, test flows
+
+**Frontend-first** (for UI-heavy features with existing backend):
+1. **Types** — Define expected data shapes
+2. **Hooks** — Data fetching and state management
+3. **Components** — UI building blocks
+4. **Pages** — Route pages and layouts
+5. **Backend** — Server Actions to support the UI
+6. **Database** — Migrations if new data storage is needed
 
 For each step:
 - Follow existing patterns in the project

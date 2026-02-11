@@ -1,5 +1,8 @@
 ---
-description: Lightweight single-feature implementation — explore, implement, verify without formal planning
+name: add-feature
+description: Lightweight end-to-end feature implementation (DB -> backend -> frontend) for small features (2-3 files). For larger features, use /plan-feature + /build.
+disable-model-invocation: true
+argument-hint: <feature-description>
 allowed-tools:
   - Read
   - Write
@@ -8,9 +11,8 @@ allowed-tools:
   - Glob
   - Bash
   - Task
-  - mcp__supabase__*
-  - mcp__context7__*
-user-invocable: true
+  - mcp__supabase
+  - mcp__context7
 ---
 
 # /add-feature — Lightweight Feature Implementation

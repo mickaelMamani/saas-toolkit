@@ -1,5 +1,8 @@
 ---
-description: Parallel build with agent teams (experimental) or coordinated subagents
+name: team-build
+description: Parallel build using Claude Code agent teams. Creates backend + frontend + quality teammates that coordinate through shared task list. Requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.
+disable-model-invocation: true
+argument-hint: <spec.md> [phases=N-M]
 allowed-tools:
   - Read
   - Write
@@ -8,9 +11,8 @@ allowed-tools:
   - Glob
   - Bash
   - Task
-  - mcp__supabase__*
-  - mcp__context7__*
-user-invocable: true
+  - mcp__supabase
+  - mcp__context7
 ---
 
 # /team-build — Multi-Agent Team Coordination

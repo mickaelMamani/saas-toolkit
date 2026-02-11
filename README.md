@@ -1,23 +1,12 @@
-# saas-claude-marketplace
+# SaaS Toolkit — Claude Code Plugin v2.0
 
-Private Claude Code plugin marketplace for Next.js + Supabase + Stripe SaaS development.
+> Build production-ready SaaS applications with Next.js + Supabase + Stripe + Tailwind + shadcn/ui using an orchestrated team of AI agents.
 
-## What's included
+## Quick Start
 
-**saas-toolkit** plugin (v3.0.0):
-- **11 agents** — codebase explorer, DB explorer, docs explorer, web search, frontend reviewer, Stripe specialist, Supabase specialist, security reviewer, testing specialist, UI/UX reviewer, project manager
-- **20 skills** — commits, dev workflow, explore, hotfix, oneshot, plan-feature, code review, auth, stripe-setup, db-migration, security-scan, test, deploy, init-saas, build, resume, status, scaffold, add-feature, team-build
-- **3 reference indexes** — Next.js App Router, Supabase + Next.js, Stripe + Next.js
+### Installation
 
-## Setup
-
-### 1. Create a Supabase Cloud project
-
-This toolkit requires **Supabase Cloud** (not local/self-hosted). Create a project at [supabase.com](https://supabase.com) and note your project URL and keys.
-
-### 2. Add the plugin to your project
-
-In your project's `.claude/settings.json`, add the plugin path:
+Add the plugin to your project's `.claude/settings.json`:
 
 ```json
 {
@@ -27,156 +16,212 @@ In your project's `.claude/settings.json`, add the plugin path:
 }
 ```
 
-### 3. Configure MCP servers
+### Prerequisites
 
-Copy `saas-toolkit/.mcp.json` into your project's `.mcp.json`. The plugin ships with two MCP servers:
+- Node.js 18+, npm/pnpm
+- **Supabase Cloud project** (create at supabase.com) — no local Supabase needed
+- **Stripe account** (test mode) — products/prices created via MCP Stripe
+- Claude Code with a Pro/Max subscription
+- MCP servers configured: `supabase`, `stripe`, `context7` (copy `saas-toolkit/.mcp.json` into your project)
 
+### Recommended Settings
+
+Copy the hooks from `saas-toolkit/recommended-settings.json` into your `.claude/settings.json`:
+- **PreToolUse hooks**: restrict Bash to safe commands, prevent writing `.env` files
+- **Stop hook**: audible beep when Claude finishes (Windows)
+- **Notification hook**: beep on idle prompt
+
+---
+
+## Build a SaaS from Zero
+
+### Step 0: Write Your Spec
+
+Create a markdown describing: elevator pitch, target users, core features, pricing model, auth requirements, integrations. Save as `my-saas-spec.md`.
+
+### Step 1: Bootstrap — `/init-saas my-saas-spec.md`
+
+Scaffolds the entire project: Next.js + auth + Stripe + folder structure + CLAUDE.md. Deploys stripe-sync-engine as Supabase Edge Function, runs initial migrations on cloud via MCP.
+
+### Step 2: Plan — Ask the project-manager agent
+
+> "Use the project-manager agent to plan the build of my-saas-spec.md"
+
+Creates TASKS.md with all phases.
+
+### Step 3: Build (choose your approach)
+
+**Approach A: Subagent Mode (recommended for most)**
+```
+/build my-saas-spec.md phase=0
+/clear
+/resume my-saas-spec.md
+... repeat ...
+```
+
+**Approach B: Agent Team Mode (for large features)**
+```
+/team-build my-saas-spec.md
+```
+Spawns backend + frontend + quality teammates.
+
+**Approach C: Hybrid Mode (recommended for complex SaaS)**
+- Phase 0-1: `/build` (sequential foundation)
+- Phase 2-5: `/team-build` (parallel implementation)
+- Phase 6-7: `/build` (sequential polish)
+
+### Step 4: Review & Ship
+```
+/review
+/status my-saas-spec.md
+```
+
+---
+
+## Command Reference
+
+### Action Commands (user-triggered)
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/init-saas` | Bootstrap new project | `/init-saas my-spec.md` |
+| `/build` | Phase-by-phase build | `/build my-spec.md phase=0` |
+| `/team-build` | Parallel agent team build | `/team-build my-spec.md` |
+| `/resume` | Continue after /clear | `/resume my-spec.md` |
+| `/status` | Health check dashboard | `/status my-spec.md` |
+| `/scaffold` | Generate patterns | `/scaffold crud posts` |
+| `/add-feature` | Quick feature add | `/add-feature Add dark mode toggle` |
+| `/plan-feature` | Create feature spec | `/plan-feature name="user profiles"` |
+| `/review` | Code + security review | `/review` |
+| `/hotfix` | Debug and fix issues | `/hotfix "webhook returns 400"` |
+| `/commits` | Conventional commit + push | `/commits` |
+| `/oneshot` | Single-task completion | `/oneshot task="Add favicon"` |
+| `/dev` | Spec-driven development | `/dev` |
+| `/explore` | Codebase exploration | `/explore` |
+
+### Knowledge Skills (auto-invoked)
+
+| Skill | Loaded when... |
+|-------|----------------|
+| `auth` | Building signup, login, OAuth, protected routes |
+| `stripe-setup` | Implementing checkout, billing, webhooks |
+| `db-migration` | Creating tables, RLS policies, seed data |
+| `test` | Writing or running tests |
+| `deploy` | Preparing for Vercel deployment |
+| `security-scan` | Running security audit |
+
+---
+
+## Agent Team
+
+| Role | Agent | Model | When |
+|------|-------|-------|------|
+| Project Manager | project-manager | Opus | Plans, delegates, tracks |
+| DBA | supabase-specialist | Sonnet | DB phases |
+| Backend Dev | stripe-specialist | Sonnet | Backend + payments |
+| Frontend Dev | general-purpose | Sonnet | UI phases |
+| UI/UX Reviewer | ui-ux-reviewer | Sonnet | Polish phase |
+| QA Engineer | testing-specialist | Sonnet | Test phase |
+| Security Auditor | security-reviewer | Opus | Review + deploy |
+| Code Reviewer | frontend-code-reviewer | Opus | Review phase |
+| Explorer | explore-codebase | Haiku | On demand |
+| DB Explorer | explore-db | Haiku | On demand |
+| Researcher | explore-docs + websearch | Haiku | On demand |
+
+---
+
+## Scaffold Patterns
+
+```
+/scaffold crud <resource>        # Full CRUD with migration, RLS, actions, hooks, components, pages
+/scaffold billing                # Complete billing management page
+/scaffold landing                # Marketing landing page with pricing
+/scaffold auth-pages             # Login, signup, forgot-password, reset, OAuth
+/scaffold dashboard <name>       # Dashboard with stats, charts, tables
+/scaffold settings <name>        # Settings form with Server Action
+/scaffold admin-panel            # Admin layout with users, subscriptions
+/scaffold onboarding-flow        # Multi-step wizard
+```
+
+---
+
+## Agent Teams Setup (Windows)
+
+Agent teams require tmux. On Windows:
+
+**Option 1: WSL2 (recommended)**
+```bash
+wsl --install
+# Inside WSL:
+sudo apt install tmux
+```
+
+**Option 2: In-process mode (no tmux)**
+
+Teammates run in background. Use Shift+Up/Down to cycle.
+
+Enable in settings:
 ```json
 {
-  "mcpServers": {
-    "supabase": {
-      "url": "https://mcp.supabase.com/mcp"
-    },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstreamapi/context7-mcp@latest"]
-    }
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-5-20250929"
   }
 }
 ```
 
-**Supabase MCP** is required — it lets agents interact directly with your Supabase project (manage tables, run migrations, query data, manage RLS policies). On first use, it opens a browser window to authenticate with your Supabase account. No personal access token needed.
+---
 
-**Context7 MCP** provides up-to-date library documentation for Next.js, Supabase, Stripe, etc.
+## Context Management
 
-### 4. Project-specific CLAUDE.md
+- `/clear` after every 2-3 phases to keep context fresh
+- `/resume` reads TASKS.md and picks up where you left off
+- `/status` gives a quick health dashboard anytime
+- TASKS.md is the single source of truth for progress
 
-Create a `CLAUDE.md` in your project root with project-specific context (tech stack, conventions, file structure).
+---
 
-### 5. Recommended hooks (optional)
+## Architecture
 
-See `saas-toolkit/recommended-settings.json` for recommended hook configurations that restrict Bash commands to safe operations and prevent writing to `.env` files.
+### Critical Constraints
 
-## Skills usage
+1. **Supabase Cloud Only** — No local development. All database operations via MCP Supabase.
+2. **stripe-sync-engine** — All Stripe data syncs automatically into `stripe.*` schema via Supabase Edge Function. No manual sync tables.
+3. **MCP-First** — Agents interact with Supabase and Stripe via MCP servers, not CLI commands.
 
-Invoke skills with slash commands in Claude Code:
+### MCP Servers
 
-### Development
-- `/commits` — Conventional commit workflow
-- `/dev` — Spec-driven development
-- `/explore` — Codebase exploration
-- `/hotfix` — Hotfix debugging
-- `/oneshot` — Quick one-shot tasks
-- `/plan-feature` — Feature planning
-- `/review` — Code review
+| Server | Purpose |
+|--------|---------|
+| `supabase` | Database, migrations, RLS, secrets, Edge Functions |
+| `stripe` | Products, prices, customers, checkout sessions |
+| `context7` | Up-to-date library documentation |
 
-### SaaS Stack
-- `/auth` — Supabase auth implementation
-- `/stripe-setup` — Stripe SaaS integration
-- `/db-migration` — Supabase migrations
-- `/security-scan` — Security audit
-- `/test` — Testing workflows
-- `/deploy` — Deployment preparation
+### References
 
-### Orchestration (v3.0.0)
-- `/init-saas` — Bootstrap new SaaS project from spec
-- `/build` — Phase-by-phase build orchestration
-- `/resume` — Resume after context reset
-- `/status` — Project health check
-- `/scaffold` — Quick SaaS pattern scaffolding
-- `/add-feature` — Lightweight feature implementation
-- `/team-build` — Multi-agent team coordination
+The plugin includes compressed doc indexes (~8KB each) for:
+- Next.js App Router patterns
+- Supabase + Next.js integration
+- Stripe + Next.js integration (including stripe-sync-engine)
 
-## Building a SaaS from zero
+---
 
-The orchestration skills let you go from an idea to a working SaaS app in a structured, phase-by-phase workflow.
+## Security
 
-### Step 1: Bootstrap the project
+The security-reviewer agent checks:
+- OWASP Top 10
+- RLS coverage on all tables (including `stripe.*` schema)
+- No secrets in `NEXT_PUBLIC_*` vars
+- Webhook signature verification
+- Zod validation on all inputs
+- Dependency vulnerabilities
 
-Run `/init-saas` with your project spec — either a description or a spec file:
+Run anytime: `/security-scan`
 
-```
-/init-saas
+---
 
-Build a project management SaaS called "Taskflow":
-- Users sign up and create organizations
-- Org members can create projects with tasks (kanban board)
-- Free plan: 1 project, 10 tasks. Pro plan ($19/mo): unlimited
-- Stripe billing with customer portal
-```
+## Totals
 
-This scaffolds a full Next.js + Supabase + Stripe project: app structure, Supabase clients, middleware, initial DB migrations, Stripe sync engine Edge Function, shadcn/ui, `.env.example`, `CLAUDE.md`, and a `TASKS.md` build plan.
-
-### Step 2: Build phase by phase
-
-Run `/build` to start executing the build plan from `TASKS.md`:
-
-```
-/build
-```
-
-The build runs through 8 phases in order:
-
-| Phase | What happens | Agents involved |
-|-------|-------------|-----------------|
-| 0. Foundation | DB migrations, RLS policies, type generation | supabase-specialist, explore-db |
-| 1. Auth | Login/signup pages, OAuth, middleware guard | supabase-specialist |
-| 2. Backend | Server Actions, API routes, Stripe webhooks | stripe-specialist |
-| 3. Data layer | Fetch helpers, subscription gating, validation | — |
-| 4. Components | UI components, forms, layouts (shadcn/ui) | explore-codebase |
-| 5. Pages | Routes, navigation, auth guards | — |
-| 6. Polish | Loading/error/empty states, mobile, a11y | ui-ux-reviewer |
-| 7. Quality | Tests + security audit | testing-specialist, security-reviewer |
-
-After each phase, the build verifies (`npm run build`), updates `TASKS.md`, and checkpoints progress.
-
-### Step 3: Manage context
-
-Claude Code has a finite context window. After 2-3 phases, run `/clear` to free memory, then:
-
-```
-/resume
-```
-
-This reads `TASKS.md`, verifies completed work, shows a progress summary, and continues from where you left off.
-
-### Step 4: Check project health
-
-At any point, run `/status` for a quick dashboard:
-
-```
-/status
-```
-
-```
-| Area         | Status | Details                   |
-|--------------|--------|---------------------------|
-| Tasks        | 14/22  | Phase 4: Components       |
-| Build        | Pass   |                           |
-| Types        | Pass   |                           |
-| DB (tables)  | 6      | All have RLS              |
-| Git          | Clean  | master, up to date        |
-```
-
-### Adding features later
-
-For individual features after the initial build, use `/add-feature` instead of the full `/build` cycle:
-
-```
-/add-feature Add a notification system — in-app + email notifications
-when a task is assigned to a user
-```
-
-For common SaaS patterns, use `/scaffold`:
-
-```
-/scaffold crud invoices
-/scaffold billing
-/scaffold dashboard
-/scaffold settings
-/scaffold landing
-```
-
-### Parallel builds (experimental)
-
-For large projects, `/team-build` coordinates multiple agents working in parallel — either via Claude Code agent teams or coordinated subagent dispatching with file ownership boundaries.
+- **11 agents** — project-manager, supabase-specialist, stripe-specialist, security-reviewer, testing-specialist, ui-ux-reviewer, frontend-code-reviewer, explore-codebase, explore-db, explore-docs, websearch
+- **20 skills** — 14 action + 6 knowledge
+- **3 reference indexes** — Next.js, Supabase, Stripe

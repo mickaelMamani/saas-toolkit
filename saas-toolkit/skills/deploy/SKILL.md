@@ -1,12 +1,12 @@
 ---
-description: Vercel deployment preparation — pre-deploy checklist and readiness report
+name: deploy
+description: Deploy to Vercel. Use when setting up deployment, configuring env vars, or troubleshooting builds.
 allowed-tools:
   - Read
   - Grep
   - Glob
   - Bash
   - Task
-user-invocable: true
 ---
 
 # /deploy — Deployment Preparation

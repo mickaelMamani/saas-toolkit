@@ -1,5 +1,6 @@
 ---
-description: Testing workflows — write, run, and analyze tests with Vitest and Playwright
+name: test
+description: Write or run tests. Use when implementing new tests, fixing broken tests, or running the test suite.
 allowed-tools:
   - Read
   - Write
@@ -8,7 +9,6 @@ allowed-tools:
   - Glob
   - Bash(npx vitest*, npx playwright*)
   - Task
-user-invocable: true
 ---
 
 # /test — Testing Workflows

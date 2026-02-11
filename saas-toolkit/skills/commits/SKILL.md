@@ -1,11 +1,12 @@
 ---
-description: Create conventional commits with structured type, scope, and body
+name: commits
+description: Create conventional commits with structured type, scope, and body.
+disable-model-invocation: true
 allowed-tools:
   - Bash
   - Read
   - Grep
   - Glob
-user-invocable: true
 ---
 
 # /commits — Conventional Commit Workflow

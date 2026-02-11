@@ -1,5 +1,8 @@
 ---
-description: Resume interrupted build — reads TASKS.md, verifies completed work, continues
+name: resume
+description: Resume after /clear or new session. Reads TASKS.md, verifies completed work, continues from where you left off.
+disable-model-invocation: true
+argument-hint: <spec.md>
 allowed-tools:
   - Read
   - Write
@@ -8,8 +11,7 @@ allowed-tools:
   - Glob
   - Bash
   - Task
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /resume — Resume After Context Reset

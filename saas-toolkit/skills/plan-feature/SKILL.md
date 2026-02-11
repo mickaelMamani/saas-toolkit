@@ -1,5 +1,8 @@
 ---
-description: Feature planning with phased spec output
+name: plan-feature
+description: Feature planning with phased spec output.
+disable-model-invocation: true
+argument-hint: name="<feature-name>"
 allowed-tools:
   - Read
   - Grep
@@ -7,8 +10,7 @@ allowed-tools:
   - Task
   - WebSearch
   - WebFetch
-  - mcp__context7__*
-user-invocable: true
+  - mcp__context7
 ---
 
 # /plan-feature — Feature Planning

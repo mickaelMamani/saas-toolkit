@@ -1,5 +1,8 @@
 ---
-description: Bootstrap a new Next.js + Supabase + Stripe SaaS project from a spec
+name: init-saas
+description: Bootstrap a new SaaS project from a requirements markdown. Creates folder structure, installs dependencies, sets up Supabase + Stripe + auth boilerplate.
+disable-model-invocation: true
+argument-hint: <path-to-spec.md>
 allowed-tools:
   - Read
   - Write
@@ -10,8 +13,8 @@ allowed-tools:
   - Task
   - WebSearch
   - WebFetch
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
+  - mcp__stripe
 ---
 
 # /init-saas — Bootstrap a New SaaS Project
@@ -73,15 +76,25 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 ```
 
-### 6. Initialize Supabase locally
+### 6. Set up folder structure
 
-```bash
-npx supabase init
+```
+src/
+├── app/
+│   ├── (marketing)/        # Public pages
+│   ├── (auth)/              # Auth pages
+│   └── (app)/               # Protected dashboard
+├── components/{ui,marketing,auth,app,shared}/
+├── lib/{supabase,stripe}/
+├── hooks/
+├── types/
+├── actions/
+└── middleware.ts
 ```
 
-### 7. Initial database migrations
+### 7. Initial database migrations via MCP Supabase
 
-Create migration for core SaaS tables:
+Run migrations directly on the Supabase Cloud project via `mcp__supabase` SQL execution. Create core SaaS tables:
 
 - **profiles** — `id` (references auth.users), `full_name`, `avatar_url`, `stripe_customer_id`, timestamps
 - **organizations** — `id`, `name`, `slug` (unique), `stripe_customer_id`, timestamps
@@ -100,7 +113,11 @@ Add trigger: auto-create profile on auth.users insert.
 
 ### 7b. Stripe Sync Engine Edge Function
 
-Create `supabase/functions/stripe-sync/index.ts` that uses `@supabase/stripe-sync-engine` to process all Stripe webhooks and sync data into the `stripe` schema. Follow `/stripe-setup` skill patterns.
+Deploy stripe-sync-engine as Supabase Edge Function via MCP Supabase: create `supabase/functions/stripe-sync/index.ts` with `StripeSync` webhook handler, set secrets (`DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) via MCP. Follow `/stripe-setup` skill patterns.
+
+### 7c. RLS on stripe.* schema
+
+Add RLS policies on `stripe.*` schema so users can only read their own Stripe data (join `stripe.customer` to `profiles.stripe_customer_id`).
 
 ### 8. Initialize shadcn/ui
 

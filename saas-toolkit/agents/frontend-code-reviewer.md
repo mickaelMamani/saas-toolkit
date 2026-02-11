@@ -28,6 +28,7 @@ Apply these rules strictly when reviewing Next.js App Router code:
 - Parallel data fetching: use `Promise.all()` to avoid request waterfalls
 - Never fetch in `layout.tsx` what could be fetched in the specific `page.tsx`
 - Use `unstable_cache` or `use cache` directive for expensive server-side computations
+- `use cache` directive patterns (Next.js 15+): mark async functions or route segments as cacheable
 
 ### Rendering & Streaming
 - Wrap async components with `<Suspense>` boundaries and provide meaningful fallbacks

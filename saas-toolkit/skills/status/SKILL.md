@@ -1,13 +1,16 @@
 ---
-description: Project health check — TASKS.md progress, build status, types, DB state
+name: status
+description: Project health check and progress report. Checks build, types, lint, tests, RLS coverage, and progress against spec.
+disable-model-invocation: true
+argument-hint: "[spec.md]"
+context: fork
 allowed-tools:
   - Read
   - Grep
   - Glob
   - Bash
   - Task
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /status — Project Health Dashboard

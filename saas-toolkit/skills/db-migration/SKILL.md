@@ -1,5 +1,6 @@
 ---
-description: Supabase database migrations — tables, RLS policies, indexes, and SaaS schema patterns
+name: db-migration
+description: Supabase database migrations. Use when creating tables, modifying schema, adding RLS policies, or writing seed data.
 allowed-tools:
   - Read
   - Write
@@ -7,8 +8,7 @@ allowed-tools:
   - Grep
   - Glob
   - Bash
-  - mcp__supabase__*
-user-invocable: true
+  - mcp__supabase
 ---
 
 # /db-migration — Supabase Migrations
@@ -17,13 +17,11 @@ Create and manage Supabase database migrations with proper patterns for SaaS app
 
 ## Migration Workflow
 
-### 1. Create migration file
+**All migrations target Supabase Cloud via MCP.** Use `mcp__supabase` to run SQL directly on the cloud project. Never use `supabase start` or `supabase db push`.
 
-```bash
-npx supabase migration new <descriptive_name>
-```
+### 1. Write the migration SQL
 
-This creates a file at `supabase/migrations/<timestamp>_<name>.sql`.
+Write idempotent SQL that can be re-run safely. For local tracking, keep files in `supabase/migrations/` but apply them via MCP.
 
 ### 2. Write idempotent SQL
 
@@ -47,18 +45,13 @@ DROP POLICY IF EXISTS "policy_name" ON public.my_table;
 CREATE POLICY "policy_name" ON public.my_table ...;
 ```
 
-### 3. Apply migration
+### 3. Apply migration via MCP
 
-```bash
-npx supabase db push       # Push to remote
-npx supabase db reset       # Reset local DB and re-apply all migrations
-```
+Run the SQL directly on the cloud project using `mcp__supabase` SQL execution tools. Do NOT use `supabase db push` or local development.
 
 ### 4. Generate types
 
 ```bash
-npx supabase gen types typescript --local > lib/database.types.ts
-# or for remote:
 npx supabase gen types typescript --project-id <project-id> > lib/database.types.ts
 ```
 
@@ -208,7 +201,9 @@ CREATE INDEX idx_org_members_user_id ON public.org_members(user_id);
 CREATE INDEX idx_org_members_org_id ON public.org_members(org_id);
 ```
 
-### Subscriptions
+### Subscriptions (manual — only if NOT using stripe-sync-engine)
+
+**Note:** If using `@supabase/stripe-sync-engine` (recommended), the `stripe.*` schema manages subscription data automatically. Only create this manual table if you have a specific reason not to use the sync engine.
 
 ```sql
 CREATE TABLE public.subscriptions (
@@ -269,3 +264,5 @@ INSERT INTO public.organizations (id, name, slug) VALUES
 - Use `timestamptz` not `timestamp`
 - Use `text` not `varchar`
 - Use `uuid` primary keys
+- **All migrations target Supabase Cloud via `mcp__supabase`** — never local
+- **`stripe.*` schema is managed by stripe-sync-engine** — only add RLS policies to `stripe.*` tables, never create/modify the tables themselves

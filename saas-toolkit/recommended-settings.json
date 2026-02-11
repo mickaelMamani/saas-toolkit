@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/settings.schema.json",
-  "_comment": "Recommended hooks for saas-toolkit. Copy relevant sections into your project's .claude/settings.json",
+  "_comment": "Recommended settings for saas-toolkit. Copy relevant sections into your project's .claude/settings.json",
   "hooks": {
     "PreToolUse": [
       {
@@ -22,6 +22,19 @@
             "_description": "Prevent writing to .env files (except .env.example)"
           }
         ]
+      }
+    ],
+    "Stop": [
+      {
+        "command": "powershell -c \"[console]::beep(800,300); [console]::beep(1000,300); [console]::beep(1200,500)\"",
+        "timeout": 5000
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "command": "powershell -c \"[console]::beep(600,200); [console]::beep(600,200)\"",
+        "timeout": 5000
       }
     ]
   }

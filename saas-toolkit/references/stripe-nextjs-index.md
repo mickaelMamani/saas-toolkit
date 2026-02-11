@@ -16,6 +16,83 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 **NEVER** import this file in Client Components or files with `"use client"`.
 
+## stripe-sync-engine (Recommended)
+
+Auto-sync all Stripe data into a `stripe` schema in your Supabase database.
+
+### Edge Function deployment
+
+```typescript
+// supabase/functions/stripe-sync/index.ts
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
+import { StripeSync } from 'npm:@supabase/stripe-sync-engine'
+
+const stripeSync = new StripeSync({
+  poolConfig: {
+    connectionString: Deno.env.get('DATABASE_URL')!,
+    max: 20,
+    keepAlive: true,
+  },
+  stripeWebhookSecret: Deno.env.get('STRIPE_WEBHOOK_SECRET')!,
+  stripeSecretKey: Deno.env.get('STRIPE_SECRET_KEY')!,
+  backfillRelatedEntities: false,
+  autoExpandLists: true,
+})
+
+Deno.serve(async (req) => {
+  const rawBody = new Uint8Array(await req.arrayBuffer())
+  const stripeSignature = req.headers.get('stripe-signature')
+  await stripeSync.processWebhook(rawBody, stripeSignature)
+  return new Response(JSON.stringify({ received: true }), { status: 200 })
+})
+```
+
+### Querying `stripe.*` schema from Next.js
+
+```typescript
+// Query subscription status via Supabase client
+const { data } = await supabase
+  .schema('stripe')
+  .from('subscriptions')
+  .select('id, status, current_period_end, items:subscription_items(price:prices(*))')
+  .eq('customer', profile.stripe_customer_id)
+  .in('status', ['active', 'trialing'])
+  .single();
+```
+
+### RLS on `stripe.*` tables
+
+```sql
+CREATE POLICY "Users can view own stripe data" ON stripe.customers
+  FOR SELECT USING (
+    id IN (SELECT stripe_customer_id FROM public.profiles WHERE id = auth.uid())
+  );
+
+CREATE POLICY "Users can view own subscriptions" ON stripe.subscriptions
+  FOR SELECT USING (
+    customer IN (SELECT stripe_customer_id FROM public.profiles WHERE id = auth.uid())
+  );
+```
+
+### Business logic via DB triggers
+
+```sql
+-- Trigger on stripe.subscriptions for feature provisioning
+CREATE OR REPLACE FUNCTION handle_subscription_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- React to subscription status changes
+  -- e.g., provision features, send notifications
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_subscription_change
+  AFTER INSERT OR UPDATE ON stripe.subscriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_subscription_change();
+```
+
 ## Checkout Session Pattern
 
 ### Server Action
@@ -27,7 +104,7 @@ import { redirect } from 'next/navigation';
 
 export async function createCheckoutSession(priceId: string) {
   // 1. Verify user authentication
-  // 2. Get or create Stripe Customer
+  // 2. Get or create Stripe Customer (store on profiles.stripe_customer_id)
   // 3. Create Checkout Session
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -55,60 +132,6 @@ export function PricingButton({ priceId }: { priceId: string }) {
 }
 ```
 
-## Webhook Handler Pattern
-
-```typescript
-// app/api/webhooks/stripe/route.ts
-import { stripe } from '@/lib/stripe';
-import { NextResponse } from 'next/server';
-
-export async function POST(request: Request) {
-  // 1. Get raw body (MUST be text, not JSON)
-  const body = await request.text();
-  const signature = request.headers.get('stripe-signature')!;
-
-  // 2. Verify signature
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-  }
-
-  // 3. Handle events
-  switch (event.type) {
-    case 'checkout.session.completed':
-      // Provision access, create subscription record
-      break;
-    case 'customer.subscription.updated':
-      // Sync subscription status, plan changes
-      break;
-    case 'customer.subscription.deleted':
-      // Revoke access, update subscription record
-      break;
-    case 'invoice.payment_failed':
-      // Notify user, set grace period
-      break;
-    case 'invoice.payment_succeeded':
-      // Clear failed payment flags
-      break;
-  }
-
-  // 4. Return 200 quickly
-  return NextResponse.json({ received: true });
-}
-```
-
-**Critical rules:**
-- `request.text()` NOT `request.json()`
-- Always verify signature
-- Return 200 even if processing fails (handle errors internally)
-- Store event IDs for idempotency
-
 ## Customer Portal
 
 ```typescript
@@ -134,27 +157,10 @@ Use Customer Portal for: plan changes, payment method updates, invoice history, 
 | `customer.subscription.created` | Subscription created | Initial record (often redundant with checkout) |
 | `customer.subscription.updated` | Plan change, renewal, trial end | Update status, price_id, period dates |
 | `customer.subscription.deleted` | Subscription canceled (end of period) | Revoke access, update status |
-| `customer.subscription.paused` | Subscription paused | Update status, limit access |
 | `invoice.payment_succeeded` | Payment processed | Clear payment failure flags |
 | `invoice.payment_failed` | Payment failed | Notify user, set grace period |
-| `invoice.finalized` | Invoice ready | Store invoice reference |
 
-## Price/Product Model
-
-```
-Organization (Stripe)
-└── Product ("Pro Plan")
-    ├── Price ($19/month — price_xxx)
-    └── Price ($190/year — price_yyy)
-└── Product ("Enterprise Plan")
-    ├── Price ($49/month — price_zzz)
-    └── Price ($490/year — price_www)
-```
-
-- Products = plan tiers
-- Prices = billing intervals for each product
-- Store `price_id` in subscription record
-- Use `product.metadata` for feature flags
+**Note:** stripe-sync-engine handles writing all these events to the `stripe.*` schema automatically. Use DB triggers for app-specific reactions.
 
 ## Subscription Status Values
 
@@ -166,8 +172,22 @@ Organization (Stripe)
 | `canceled` | Will cancel at period end | Yes (until period end) |
 | `unpaid` | All retries failed | No |
 | `incomplete` | Initial payment pending | No |
-| `incomplete_expired` | Initial payment failed | No |
-| `paused` | Paused by request | No |
+
+## Price/Product Model
+
+```
+Product ("Pro Plan")
+├── Price ($19/month — price_xxx)
+└── Price ($190/year — price_yyy)
+Product ("Enterprise Plan")
+├── Price ($49/month — price_zzz)
+└── Price ($490/year — price_www)
+```
+
+- Products = plan tiers
+- Prices = billing intervals for each product
+- Store `price_id` in subscription record
+- Use `product.metadata` for feature flags
 
 ## Test Mode
 
@@ -183,19 +203,11 @@ Organization (Stripe)
 ### Stripe CLI
 
 ```bash
-# Login
 stripe login
-
-# Listen for webhooks locally
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
-
-# Trigger test events
 stripe trigger checkout.session.completed
 stripe trigger customer.subscription.updated
 stripe trigger invoice.payment_failed
-
-# Use test clocks for subscription lifecycle
-stripe test_clocks create --frozen-time 2024-01-01T00:00:00Z
 ```
 
 ## Error Handling
@@ -212,8 +224,6 @@ try {
     // Invalid parameters
   } else if (err instanceof Stripe.errors.StripeAuthenticationError) {
     // Invalid API key
-  } else {
-    // Unknown error
   }
 }
 ```

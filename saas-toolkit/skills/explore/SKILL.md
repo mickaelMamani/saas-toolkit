@@ -1,11 +1,12 @@
 ---
-description: Codebase exploration using specialized explore agents
+name: explore
+description: Codebase exploration using specialized explore agents.
+disable-model-invocation: true
 allowed-tools:
   - Task
   - Read
   - Grep
   - Glob
-user-invocable: true
 ---
 
 # /explore — Codebase Exploration
