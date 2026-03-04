@@ -1,11 +1,15 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "saas-claude-marketplace",
-  "owner": "Mickael",
+  "owner": {
+    "name": "Mickael",
+    "email": "mickael.mamani@hotmail.fr"
+  },
   "description": "Private Claude Code plugin marketplace for SaaS development",
   "plugins": [
     {
       "name": "saas-toolkit",
-      "path": "./saas-toolkit",
+      "source": "./saas-toolkit",
       "description": "Next.js + Supabase + Stripe SaaS development toolkit with 11 agents, 20 skills, and 3 reference indexes"
     }
   ]
