@@ -1,6 +1,6 @@
 ---
-name: resume
-description: Resume after /clear or new session. Reads TASKS.md, verifies completed work, continues from where you left off.
+name: continue
+description: Continue after /clear or new session. Reads TASKS.md, verifies completed work, continues from where you left off.
 disable-model-invocation: true
 argument-hint: <spec.md>
 allowed-tools:
@@ -14,7 +14,7 @@ allowed-tools:
   - mcp__supabase
 ---
 
-# /resume — Resume After Context Reset
+# /continue — Continue After Context Reset
 
 Recovers context after `/clear` or a new session and continues the build from where it left off.
 
@@ -43,7 +43,7 @@ For each task marked `[x]` in TASKS.md, do a quick verification:
 ### 4. Present status summary
 
 ```
-## Resume: [Project Name]
+## Continue: [Project Name]
 
 Progress: [X/Y tasks completed] — Phase [N]: [Name]
 

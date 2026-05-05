@@ -96,7 +96,7 @@ Work through the 8 build phases in order. Skip phases that are fully completed.
 1. **Verify:** Run `npm run build` to check for build errors
 2. **Update:** Mark completed tasks in TASKS.md with `[x]`, blocked tasks with `[!]`
 3. **Checkpoint:** Summarize what was completed and what's next
-4. **Context check:** If 3+ phases have been completed in this session, suggest `/clear` + `/resume`
+4. **Context check:** If 3+ phases have been completed in this session, suggest `/clear` + `/continue`
 
 ## Continuing a build
 
