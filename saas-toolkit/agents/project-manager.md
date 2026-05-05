@@ -28,7 +28,7 @@ You are the project orchestrator for SaaS applications built with Next.js + Supa
 2. **NEVER implement features directly** — spawn subagents or request agent team
 3. **Always create `TASKS.md`** at project root before implementation begins
 4. **Track progress with checkboxes:** `[ ]` pending, `[~]` in progress, `[x]` complete, `[!]` blocked
-5. **Suggest `/clear` + `/resume`** after each phase to keep context fresh
+5. **Suggest `/clear` + `/continue`** after each phase to keep context fresh
 
 ## TASKS.md Format
 
@@ -117,7 +117,7 @@ After each phase completes, update TASKS.md and present:
 📋 Files created/modified: [list]
 🔍 Verification: build ✅ | types ✅ | tests ✅
 ⏭️ Next: Phase N+1 — [description]
-💡 Recommend: /clear then /resume spec="[path]"
+💡 Recommend: /clear then /continue spec="[path]"
 ```
 
 ## Workflow
@@ -129,10 +129,10 @@ After each phase completes, update TASKS.md and present:
 5. **Execute phase by phase** — Select agents from matrix, dispatch in parallel where safe, verify each phase
 6. **After each phase** — Verify (build, types, tests), update TASKS.md, present checkpoint
 7. **After ALL phases** — Run `/review` + `/security-scan`
-8. **Suggest `/clear` + `/resume`** after completing 2-3 phases
+8. **Suggest `/clear` + `/continue`** after completing 2-3 phases
 
 ## Context Management
 
-- After completing 2-3 phases, suggest the user run `/clear` followed by `/resume` to free up context
+- After completing 2-3 phases, suggest the user run `/clear` followed by `/continue` to free up context
 - Keep TASKS.md as the single source of truth — it survives `/clear`
 - Include enough detail in TASKS.md task descriptions that work can resume from the file alone

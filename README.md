@@ -55,7 +55,7 @@ Creates TASKS.md with all phases.
 ```
 /build my-saas-spec.md phase=0
 /clear
-/resume my-saas-spec.md
+/continue my-saas-spec.md
 ... repeat ...
 ```
 
@@ -87,7 +87,7 @@ Spawns backend + frontend + quality teammates.
 | `/init-saas` | Bootstrap new project | `/init-saas my-spec.md` |
 | `/build` | Phase-by-phase build | `/build my-spec.md phase=0` |
 | `/team-build` | Parallel agent team build | `/team-build my-spec.md` |
-| `/resume` | Continue after /clear | `/resume my-spec.md` |
+| `/continue` | Continue after /clear | `/continue my-spec.md` |
 | `/status` | Health check dashboard | `/status my-spec.md` |
 | `/scaffold` | Generate patterns | `/scaffold crud posts` |
 | `/add-feature` | Quick feature add | `/add-feature Add dark mode toggle` |
@@ -175,7 +175,7 @@ Enable in settings:
 ## Context Management
 
 - `/clear` after every 2-3 phases to keep context fresh
-- `/resume` reads TASKS.md and picks up where you left off
+- `/continue` reads TASKS.md and picks up where you left off
 - `/status` gives a quick health dashboard anytime
 - TASKS.md is the single source of truth for progress
 
